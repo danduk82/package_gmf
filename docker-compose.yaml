@@ -17,39 +17,44 @@ services:
   ##   volumes_from:
   ##     - config:ro
 
-  mapserver:
+  qgisserver:
     extends:
       file: docker-compose-lib.yaml
-      service: mapserver
+      service: qgisserver
     volumes_from:
       - config:ro
-    volumes:
-      - /var/sig:/var/sig:ro
-
-  ## qgisserver:
-  ##   extends:
-  ##     file: docker-compose-lib.yaml
-  ##     service: qgisserver
-  ##   volumes_from:
-  ##     - config:ro
-  ##     # Single QGIS project files
-  ##     - QGIS_PROJECT_FILE=/etc/qgisserver/project.qgz
-  ##     - GEOMAPFISH_OGCSERVER=<OGC server name>
-  ##     # Multiple QGIS project files
-  ##     - QGIS_PROJECT_FILE=
-  ##     - GEOMAPFISH_ACCESSCONTROL_CONFIG=/etc/qgisserver/accesscontrol_config.yaml
-
-  tinyows:
-    extends:
-      file: docker-compose-lib.yaml
-      service: tinyows
-    volumes_from:
-      - config:ro
-
+      # Single QGIS project files
+    environment:
+      - QGIS_PROJECT_FILE=/etc/qgisserver/project.qgz
+      - GEOMAPFISH_OGCSERVER=qgis
+  
   redis:
     extends:
       file: docker-compose-lib.yaml
       service: redis
+
+  geoportal:
+    extends:
+      file: docker-compose-lib.yaml
+      service: geoportal
+    volumes_from:
+      - config:ro
+    volumes:
+      - /var/sig:/var/sig:ro
+    environment:
+      - C2CWSGIUTILS_CONFIG=/app/production.ini
+
+  alembic:
+    extends:
+      file: docker-compose-lib.yaml
+      service: alembic
+
+  front:
+    extends:
+      file: docker-compose-lib.yaml
+      service: front
+    volumes_from:
+      - config:ro
 
   tilecloudchain:
     extends:
@@ -62,27 +67,6 @@ services:
     extends:
       file: docker-compose-lib.yaml
       service: tilegeneration_slave
-    volumes_from:
-      - config:ro
-
-  geoportal:
-    extends:
-      file: docker-compose-lib.yaml
-      service: geoportal
-    volumes_from:
-      - config:ro
-    volumes:
-      - /var/sig:/var/sig:ro
-
-  alembic:
-    extends:
-      file: docker-compose-lib.yaml
-      service: alembic
-
-  front:
-    extends:
-      file: docker-compose-lib.yaml
-      service: front
     volumes_from:
       - config:ro
 

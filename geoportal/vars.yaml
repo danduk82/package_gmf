@@ -3,6 +3,10 @@
 extends: CONST_vars.yaml
 
 vars:
+  authorized_referers:
+    - https://localhost
+    - http://localhost
+
 
   srid: 2056
 
