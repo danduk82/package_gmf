@@ -1,0 +1,12 @@
+---
+project_folder: package_gmf
+project_package: package_gmf
+application_url: https://localhost:8484/
+checker_url: https://172.17.0.1:8484/c2c/health_check?max_level=9
+managed_files: []
+unmanaged_files: []
+template_vars:
+  package: package_gmf
+  srid: 2056
+  extent: 2489246.40,1078873.38,2837119.80,1296543.09
+  authtkt_secret: noghe6xai7ieweinga8avioh3theemagei9mie3Xeuy9aiGhei9ciYeidaew0ahf

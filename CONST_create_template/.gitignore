@@ -1,0 +1,11 @@
+*.pyc
+*.pyo
+__pycache__/
+/.env
+/docker-compose.override.yaml
+/upgrade
+/.upgrade.yaml
+/.UPGRADE*
+
+# Generated with dev mode
+/geoportal/package_gmf_geoportal/static/apihelp/index.html

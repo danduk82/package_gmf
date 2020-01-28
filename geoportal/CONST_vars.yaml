@@ -1,0 +1,741 @@
+---
+
+vars:
+  # the package name
+  package: package_gmf
+  main_ogc_server: source for image/png
+
+  srid: -1
+
+  # Sqlalchemy schema
+  schema: '{PGSCHEMA}'
+  # Sqlalchemy static schema
+  schema_static: '{PGSCHEMA_STATIC}'
+
+  dbsessions: {}
+
+  enable_admin_interface: True
+
+  # Database information
+  sqlalchemy:
+    url: postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}
+    pool_recycle: 30
+    pool_size: 5
+    max_overflow: 25
+    use_batch_mode: true
+  sqlalchemy_slave:
+    url: postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST_SLAVE}:{PGPORT}/{PGDATABASE}
+    pool_recycle: 30
+    pool_size: 5
+    max_overflow: 25
+    use_batch_mode: true
+
+  # 10 days of default cache
+  default_max_age: 864000
+
+  authentication:
+    two_factor: false
+    two_factor_issuer_name: package_gmf
+
+  intranet:
+    networks: []
+
+  interfaces_config:
+    default:
+      constants:
+        gmfSearchActions:
+          - action: add_theme
+            title: Add a theme
+          - action: add_group
+            title: Add a sub theme
+          - action: add_layer
+            title: Add a layer
+        gmfExternalOGCServers:
+          - name: Swiss Topo WMS
+            type: WMS
+            url: https://wms.geo.admin.ch/?lang=fr
+          - name: Swiss Topo WMTS
+            type: WMTS
+            url: https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml?lang=fr
+          - name: ASIT VD
+            type: WMTS
+            url: https://ows.asitvd.ch/wmts/1.0.0/WMTSCapabilities.xml
+        gmfAuthenticationConfig:
+          forcePasswordChange: true
+        ngeoWfsPermalinkOptions:
+          wfsTypes: []
+          defaultFeatureNS: http://mapserver.gis.umn.edu/mapserver
+          defaultFeaturePrefix: feature
+      dynamic_constants:
+        cacheVersion: cache_version
+        langUrls: lang_urls
+        gmfTwoFactorAuth: two_factor
+        gmfSearchGroups: fulltextsearch_groups
+      static:
+        angularLocaleScript:
+          name: '/etc/static-ngeo/'
+          append: angular-locale_{{locale}}.js
+      routes:
+        authenticationBaseUrl:
+          name: base
+        gmfLayersUrl:
+          name: layers_root
+        gmfRasterUrl:
+          name: raster
+        gmfShortenerCreateUrl:
+          name: shortener_create
+        ngeoPermalinkOgcserverUrl:
+          name: mapserverproxy
+          params:
+            ogcserver: '{main_ogc_server}'
+        fulltextsearchUrl:
+          name: fulltextsearch
+          params:
+            limit: 30
+            partitionlimit: 5
+          dynamic_params:
+            interface: interface
+        gmfTreeUrl:
+          name: themes
+          params:
+            background: background
+          dynamic_params:
+            interface: interface
+    desktop:
+      redirect_interface: mobile
+      do_redirect: True
+      constants:
+        gmfPrintOptions:
+          legend:
+            # See:
+            # https://www.mapserver.org/development/rfc/ms-rfc-101.html
+            # https://docs.qgis.org/testing/en/docs/user_manual/working_with_ogc/server/services.html#getlegendgraphics
+            useBbox: true
+            label:
+              qgis: false
+            params:
+              # See:
+              # https://docs.qgis.org/testing/en/docs/user_manual/working_with_ogc/server/services.html#getlegendgraphics
+              qgis:
+                LAYERFONTFAMILY: DejaVu Sans
+                ITEMFONTFAMILY: DejaVu Sans
+                LAYERFONTSIZE: '10'
+                ITEMFONTSIZE: '8'
+      routes:
+        gmfProfileJsonUrl:
+          name: profile.json
+        gmfPrintUrl:
+          name: printproxy
+    desktop_alt:
+      redirect_interface: mobile_alt
+      constants:
+        ngeoQueryOptions:
+          tolerance: 20
+          limit: 5
+          queryCountFirst: true
+        gmfPrintOptions:
+          scaleInput: true
+          legend:
+            useBbox: false
+        gmfTreeManagerModeFlush: false
+        gmfSearchGroups: []
+        gmfFloors:
+          # Communes
+          - value: '8'
+            label: '8'
+          # District
+          - value: '6'
+            label: '6'
+          # Canton
+          - value: '4'
+            label: '4'
+          - value: '*'
+            label: '*'
+        gmfAuthenticationConfig:
+          allowPasswordReset: false
+          allowPasswordChange: false
+        ngeoRoutingOptions:
+          - backendUrl: https://routing.osm.ch/
+          - profiles:
+              - label: Car
+                profile: routed-car
+              - label: Bike (City)
+                profile: routed-bike
+              - label: Bike (Touring)
+                profile: routed-bike-touring
+              - label: Foot
+                profile: routed-foot
+              - label: Hiking
+                profile: routed-hiking
+        ngeoNominatimSearchDefaultParams:
+          countrycodes: CH
+      routes:
+        gmfProfileJsonUrl:
+          name: profile.json
+        gmfPrintUrl:
+          name: printproxy
+    mobile:
+      redirect_interface: desktop
+    mobile_alt:
+      redirect_interface: desktop_alt
+      constants:
+        gmfTreeManagerModeFlush: false
+        gmfSearchActions: []
+    iframe_api:
+      constants:
+        gmfSearchGroups: []
+    oeedit:
+      # FIXME: gmfContextualdatacontentTemplateUrl
+      routes:
+        gmfProfileJsonUrl:
+          name: profile.json
+        gmfPrintUrl:
+          name: printproxy
+
+  # The dogpile.cache configuration.
+  cache:
+    std:
+      backend: c2cgeoportal.hybrid
+      arguments:
+        host: '{REDIS_HOST}'
+        port: '{REDIS_PORT}'
+        db: '{REDIS_DB}'
+        lock_timeout: 120  # Two minutes
+        redis_expiration_time: 86400  # One day
+        distributed_lock: True
+    obj:
+      backend: dogpile.cache.memory
+
+  admin_interface:
+
+    layer_tree_max_nodes: 1000
+
+    # The list of available variable names for the `Metadatas` form.
+    available_metadata:
+      # Layers group
+      - name: exclusiveGroup
+        type: boolean
+      - name: isExpanded
+        type: boolean
+      - name: printNativeAngle
+        type: boolean
+      # Layer
+      - name: copyable
+        type: boolean
+      - name: legend
+        type: boolean
+      - name: isLegendExpanded
+        type: boolean
+      - name: legendRule
+      - name: legendImage
+        type: url
+      - name: hiDPILegendImages
+        type: json
+      - name: iconUrl
+        type: url
+      - name: metadataUrl
+        type: url
+      - name: disclaimer
+        translate: True
+      - name: isChecked
+        type: boolean
+      - name: identifierAttributeField
+      - name: maxResolution
+        type: float
+      - name: minResolution
+        type: float
+      - name: opacity
+        type: float
+      - name: thumbnail
+        type: url
+      - name: timeAttribute
+      - name: lastUpdateDateColumn
+      - name: lastUpdateUserColumn
+      - name: snappingConfig
+        type: json
+      - name: geometryValidation
+        type: boolean
+      - name: customOpenLayersOptions
+        type: json
+      - name: editingAttributesOrder
+        type: list
+      - name: readonlyAttributes
+        type: list
+      # WMS
+      - name: directedFilterAttributes
+        type: list
+      - name: enumeratedAttributes
+        type: list
+      # WMTS layers
+      - name: ogcServer
+      - name: wmsLayers
+      - name: queryLayers
+      - name: printLayers
+
+    # The list of functionalities that can be configured
+    # through the admin interface.
+    available_functionalities:
+      - name: default_basemap
+        single: true
+      - name: default_theme
+        single: true
+      - name: print_template
+      - name: mapserver_substitution
+      - name: filterable_layers
+      - name: preset_layer_filter
+        single: true
+      - name: open_panel
+        single: true
+
+  getitfixed:
+    enabled: false
+
+  functionalities:
+    # Functionalities that are made available to Mako templates and loginuser.
+    available_in_templates:
+      - default_basemap
+      - default_theme
+      - filterable_layers
+      - print_template
+      - preset_layer_filter
+      - open_panel
+
+  urllogin: {}
+
+  http_options:
+    timeout: 300
+
+  tinyowsproxy:
+    # URL to internal TinyOWS instance
+    tinyows_url: '{TINYOWS_URL}'
+    ogc_server: '{main_ogc_server}'
+
+    # If the `online_resource` url in the TinyOWS configuration is not set
+    # to the TinyOWS proxy url (e.g. when the service is also used without
+    # the proxy), the proxy can replace the original `online_resource`
+    # url with the proxy url.
+    # proxy_online_resource: {VISIBLE_WEB_PROTOCOL}://{VISIBLE_WEB_HOST}{VISIBLE_ENTRY_POINT}tinyows_proxy
+    # online_resource: http://localhost{VISIBLE_ENTRY_POINT}tinyows
+
+    # When running a c2cgeoportal appl. in debug mode (with `make serve`)
+    # the host has to be set explicitly in a vhost environment.
+    # tinyows_host: {VISIBLE_WEB_HOST}
+
+  api:
+    ogc_server: '{main_ogc_server}'
+
+  resourceproxy:
+    # List of urls from which it is safe to load content
+    targets: {}
+    #   exempletargetname: https://www.camptocamp.com/?param1=%s&param2=%s
+
+    # List of allowed headers
+    allowed_headers:
+      - Cache-Control
+      - Content-Encoding
+      - Content-Language
+      - Content-Type
+      - Date
+      - ETag
+      - Vary
+
+  fulltextsearch:
+    defaultlimit: 30
+    maxlimit: 200
+    languages:
+      fr: french
+      en: english
+      de: german
+
+  servers:
+    internal: http://localhost/
+    local: '{VISIBLE_WEB_PROTOCOL}://{VISIBLE_WEB_HOST}{VISIBLE_ENTRY_POINT}'
+    mapserver: '{MAPSERVER_URL}'
+    qgisserver: '{QGISSERVER_URL}'
+
+  host_forward_host: []
+
+  # The "raster web services" configuration. See the "raster"
+  # chapter in the integrator documentation.
+  raster: {}
+
+  # Used by enumeration in the query builder
+  layers:
+    geometry_validation: True
+
+  # Used by reset_password and shortener to send emails
+  smtp: {}
+
+  # Used to send an email on password reset
+  reset_password: {}
+
+  # The shortener base configuration
+  shortener:
+    # The base of created URL
+    base_url: '{VISIBLE_WEB_PROTOCOL}://{VISIBLE_WEB_HOST}{VISIBLE_ENTRY_POINT}s/'
+    allowed_hosts:
+      - '{VISIBLE_WEB_HOST}'
+
+  # Define whether the MapServer proxy should hide the OGC capabilities.
+  hide_capabilities: false
+
+  # For print proxy
+  print_url: '{PRINT_URL}'
+  print_get_redirect: false  # if true, redirects (302) directly to the print to fetch the report
+
+  devserver_url: http://{DEVSERVER_HOST}{VISIBLE_ENTRY_POINT}
+
+  pdfreport:
+    print_url: '{PRINT_URL}'
+
+  lingua_extractor: {}
+
+  content_security_policy_main_default_src_extra: ""
+  content_security_policy_main_script_src_extra: "
+    https://maps.google.com/
+    https://maps.googleapis.com/
+    https://www.google-analytics.com/"
+  content_security_policy_main_style_src_extra: "
+    https://fonts.googleapis.com/"
+  content_security_policy_main_img_src_extra: ""
+  content_security_policy_main_connect_src_extra: ""
+  content_security_policy_main_default_src: "
+    'self'
+    https://*
+    {content_security_policy_main_default_src_extra}"
+  content_security_policy_main_script_src: "
+    'self'
+    'unsafe-inline'
+    https://cdn.polyfill.io/
+    {content_security_policy_main_script_src_extra}"
+  content_security_policy_main_style_src: "
+    'self'
+    'unsafe-inline'
+    {content_security_policy_main_style_src_extra}"
+  content_security_policy_main_img_src: "
+    *
+    data:
+    {content_security_policy_main_img_src_extra}"
+  content_security_policy_main_connect_src: "
+    *
+    {content_security_policy_main_connect_src_extra}"
+
+  content_security_policy_admin_default_src_extra: ""
+  content_security_policy_admin_script_src_extra: ""
+  content_security_policy_admin_style_src_extra: ""
+  content_security_policy_admin_img_src_extra: ""
+  content_security_policy_admin_worker_src_extra: ""
+  content_security_policy_admin_default_src: "
+    'self'
+    {content_security_policy_admin_default_src_extra}"
+  content_security_policy_admin_script_src: "
+    'self'
+    'unsafe-inline'
+    {content_security_policy_admin_script_src_extra}"
+  content_security_policy_admin_style_src: "
+    'self'
+    'unsafe-inline'
+    https://stackpath.bootstrapcdn.com/
+    {content_security_policy_admin_style_src_extra}"
+  content_security_policy_admin_img_src: "
+    *
+    data:
+    {content_security_policy_admin_img_src_extra}"
+  content_security_policy_admin_worker_src: "
+    'self'
+    blob:
+    {content_security_policy_admin_worker_src_extra}"
+
+  content_security_policy_apihelp_default_src_extra: ""
+  content_security_policy_apihelp_script_src_extra: ""
+  content_security_policy_apihelp_style_src_extra: ""
+  content_security_policy_apihelp_img_src_extra: ""
+  content_security_policy_apihelp_connect_src_extra: ""
+  content_security_policy_apihelp_default_src: "
+    'self'
+    https://*
+    {content_security_policy_apihelp_default_src_extra}"
+  content_security_policy_apihelp_script_src: "
+    'self'
+    'unsafe-inline'
+    'unsafe-eval'
+    https://cdn.polyfill.io/
+    {content_security_policy_apihelp_script_src_extra}"
+  content_security_policy_apihelp_style_src: "
+    'self'
+    'unsafe-inline'
+    https://stackpath.bootstrapcdn.com/
+    {content_security_policy_apihelp_style_src_extra}"
+  content_security_policy_apihelp_img_src: "
+    *
+    data:
+    {content_security_policy_apihelp_img_src_extra}"
+  content_security_policy_apihelp_connect_src: "
+    *
+    {content_security_policy_apihelp_connect_src_extra}"
+
+  content_security_policy_c2c_default_src_extra: ""
+  content_security_policy_c2c_script_src_extra: ""
+  content_security_policy_c2c_style_src_extra: ""
+  content_security_policy_c2c_default_src: "
+    'self'
+    {content_security_policy_c2c_default_src_extra}"
+  content_security_policy_c2c_script_src: "
+    'self'
+    {content_security_policy_c2c_script_src_extra}"
+  content_security_policy_c2c_style_src: "
+    'self'
+    'unsafe-inline'
+    https://stackpath.bootstrapcdn.com/
+    {content_security_policy_c2c_style_src_extra}"
+
+  global_headers:
+    - pattern: '^/admin/.*'
+      headers: &c2cgeoform_headers
+        X-Frame-Options: SAMEORIGIN
+        X-Xss-Protection: 1; mode=block
+        X-Content-Type-Options: nosniff
+        Referrer-Policy: same-origin
+        Strict-Transport-Security: max-age=31536000; includeSubDomains
+        Content-Security-Policy:
+          "default-src {content_security_policy_admin_default_src};
+          script-src {content_security_policy_admin_script_src};
+          style-src {content_security_policy_admin_style_src};
+          img-src {content_security_policy_admin_img_src};
+          worker-src {content_security_policy_admin_worker_src}"
+    - pattern: '^/getitfixed/.*'
+      headers: *c2cgeoform_headers
+    - pattern: '^/static/.*'
+      headers:
+        Access-Control-Allow-Origin: '*'
+        Access-Control-Allow-Headers: X-Requested-With, Content-Type
+    - pattern: '^/static-ngeo/.*'
+      headers:
+        Access-Control-Allow-Origin: '*'
+        Access-Control-Allow-Headers: X-Requested-With, Content-Type
+    - pattern: '^/c2c$'
+      headers:
+        Content-Security-Policy:
+          "default-src {content_security_policy_c2c_default_src};
+          script-src {content_security_policy_c2c_script_src};
+          style-src {content_security_policy_c2c_style_src};"
+    - pattern: '^/c2c/.*'
+      headers:
+        Content-Security-Policy:
+          "default-src {content_security_policy_c2c_default_src};
+          script-src {content_security_policy_c2c_script_src};
+          style-src {content_security_policy_c2c_style_src};"
+
+  # Control the HTTP headers
+  headers:
+    dynamic: &header
+      cache_control_max_age: 600  # 10 minutes
+      access_control_max_age: 600  # 10 minutes
+      access_control_allow_origin:
+        - "*"
+    index:
+      <<: *header
+      headers: &sec_headers
+        X-Frame-Options: SAMEORIGIN
+        X-Xss-Protection: 1; mode=block
+        X-Content-Type-Options: nosniff
+        Referrer-Policy: origin
+        Strict-Transport-Security: max-age=31536000; includeSubDomains
+        Content-Security-Policy:
+          "default-src {content_security_policy_main_default_src};
+          script-src {content_security_policy_main_script_src};
+          style-src {content_security_policy_main_style_src};
+          img-src {content_security_policy_main_img_src};
+          connect-src {content_security_policy_main_connect_src}"
+    api: *header
+    apihelp:
+      <<: *header
+      headers:
+        <<: *sec_headers
+        Content-Security-Policy:
+          "default-src {content_security_policy_apihelp_default_src};
+          script-src {content_security_policy_apihelp_script_src};
+          style-src {content_security_policy_apihelp_style_src};
+          img-src {content_security_policy_apihelp_img_src};
+          connect-src {content_security_policy_apihelp_connect_src}"
+    profile: *header
+    raster: *header
+    error: *header
+    themes: &auth_header
+      cache_control_max_age: 600  # 10 minutes
+      access_control_max_age: 600  # 10 minutes
+      access_control_allow_origin:
+        - "{VISIBLE_WEB_PROTOCOL}://{VISIBLE_WEB_HOST}"
+        - "*"
+      headers:
+        Strict-Transport-Security: max-age=31536000; includeSubDomains
+    config: *auth_header
+    print: *auth_header
+    fulltextsearch: *auth_header
+    mapserver: *auth_header
+    tinyows: *auth_header
+    layers: *auth_header
+    shortener: *auth_header
+    login:
+      <<: *auth_header
+      access_control_allow_origin:
+        - "{VISIBLE_WEB_PROTOCOL}://{VISIBLE_WEB_HOST}"
+
+  # Checker configuration
+  checker_ogc_server: source for image/png
+  checker:
+    base_internal_url: http://localhost:8080
+    fulltextsearch:
+      level: 3
+      search: text to search
+    lang:
+      level: 3
+      files: [ngeo]
+    phantomjs:
+      disable: []
+      routes:
+        - name: desktop
+          params:
+            no_redirect: "true"
+          environment: &phantomjs-env
+            HTTP_MAP:
+              https://localhost:8484/tiles/: http://localhost:8080/tiles/
+          level: 6
+        - name: mobile
+          params:
+            no_redirect: "true"
+          environment: *phantomjs-env
+          level: 6
+        - name: iframe_api
+          params:
+            no_redirect: "true"
+          environment: *phantomjs-env
+          level: 6
+        - name: apihelp
+          environment: *phantomjs-env
+          level: 6
+    routes:
+      disable: []
+      routes:
+        - name: apijs
+          level: 3
+          params:
+            version: '2'
+        - name: printproxy_capabilities
+          level: 3
+        - name: mapserverproxy
+          checker_name: mapserverproxy_wms
+          params:
+            SERVICE: WMS
+            VERSION: 1.1.1
+            REQUEST: GetCapabilities
+            ogcserver: '{checker_ogc_server}'
+          level: 3
+        - name: mapserverproxy
+          checker_name: mapserverproxy_wfs
+          params:
+            SERVICE: WFS
+            VERSION: 1.1.0
+            REQUEST: GetCapabilities
+            ogcserver: '{checker_ogc_server}'
+          level: 3
+    themes:
+      params:
+        version: "2"
+      level: 4
+      interfaces: {}
+    print:
+      level: 5
+
+  # Check collector configuration
+  check_collector:
+    hosts:
+      - display: Main
+        url: 'http://localhost:8080{VISIBLE_ENTRY_POINT}'
+    max_level: 3
+    level: 10
+
+  # What web page is authorized to use the API
+  authorized_referers:
+    - '{VISIBLE_WEB_PROTOCOL}://{VISIBLE_WEB_HOST}/'
+
+  metrics:
+    memory_maps_rss: False
+    memory_maps_size: False
+    memory_cache: True
+    memory_cache_all: False
+    raster_data: False
+    total_python_object_memory: True
+
+  # Hooks that can be called at different moments in the life of the
+  # application. The value is the full python name
+  # (full.module.path.function_name) of the function to call
+  hooks: {}
+  #   after_settings: package_gmf.after_settings_hook
+  # Called just after the settings have been loaded. Allows to modify
+  # the settings at runtime (they are constructed at build time).
+  # The function receives one parameter: the settings object.
+
+  # Statistics are disabled by default
+  stats: {}
+
+  # The c2cwsgiutils base path
+  c2c:
+    base_path: /c2c
+
+  db_chooser:
+    # List of {method path} regexes to force the usage of the master, even for GET and OPTIONS
+    # This supersedes the slave list.
+    master:
+      - GET /s/.*   # The shortener updates the last_hit column on GET
+    # List of {method path} regexes to force the usage of the slave
+    slave:
+      - \w+ /printproxy/.*  # The print proxy is never writing to the DB
+
+runtime_environment:
+  - name: VISIBLE_WEB_HOST
+    default: localhost
+  - name: VISIBLE_WEB_PROTOCOL
+    default: https
+  - name: VISIBLE_ENTRY_POINT
+    default: /
+  - PGHOST
+  - PGHOST_SLAVE
+  - name: PGPORT
+    default: '5432'
+  - PGUSER
+  - PGPASSWORD
+  - name: PGDATABASE
+    default: geomapfish
+  - name: PGSCHEMA
+    default: main
+  - name: PGSCHEMA_STATIC
+    default: main_static
+  - name: TINYOWS_URL
+    default: http://tinyows:8080/
+  - name: MAPSERVER_URL
+    default: http://mapserver:8080/
+  - name: QGISSERVER_URL
+    default: http://qgisserver:8080/
+  - name: PRINT_URL
+    default: http://print:8080/print/
+  - name: DEVSERVER_HOST
+    default: webpack-dev-server:8080
+  - name: REDIS_HOST
+    default: redis
+  - name: REDIS_PORT
+    default: '6372'
+  - name: REDIS_DB
+    default: '0'
+  - name: TILEGENERATION_SQS_QUEUE
+    default: queue_name
+  - name: TILEGENERATION_S3_BUCKET
+    default: bucket_name
+
+runtime_postprocess:
+  - expression: int({})
+    vars:
+      - cache.arguments.port
+
+no_interpreted:
+  - interfaces_config.default.static.angularLocaleScript.append

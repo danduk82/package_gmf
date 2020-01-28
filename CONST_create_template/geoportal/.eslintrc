@@ -1,0 +1,17 @@
+extends:
+  - openlayers
+globals:
+  'package_gmf': false
+env:
+  jquery: true
+parserOptions:
+  ecmaVersion: 2017
+rules:
+  no-console: 0
+  comma-dangle: 0
+  import/no-unresolved: 0
+  valid-jsdoc: 0
+  max-len:
+    - error
+    - code: 110
+      ignoreComments: true
