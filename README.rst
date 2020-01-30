@@ -3,6 +3,15 @@ package_gmf project
 
 Read the `Documentation <https://camptocamp.github.io/c2cgeoportal/2.5/>`_
 
+Dependencies
+------------
+
+- docker
+- docker-compose
+- ogr2ogr
+- bash
+
+
 Checkout
 --------
 
