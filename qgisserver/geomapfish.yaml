@@ -4,7 +4,7 @@ vars:
   schema_static: '{PGSCHEMA_STATIC}'
   sqlalchemy.url: postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}
   sqlalchemy_slave.url: postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST_SLAVE}:{PGPORT}/{PGDATABASE}
-  srid: 2056
+  srid: 3857
   sqlalchemy:
     pool_recycle: 30
     pool_size: 5

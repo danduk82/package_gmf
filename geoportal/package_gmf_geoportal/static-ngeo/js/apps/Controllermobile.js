@@ -13,6 +13,7 @@ import gmfControllersAbstractMobileController, {AbstractMobileController}
   from 'gmf/controllers/AbstractMobileController.js';
 import package_gmfBase from '../package_gmfmodule.js';
 import EPSG2056 from '@geoblocks/proj/src/EPSG_2056.js';
+//import EPSG3857 from '@geoblocks/proj/src/EPSG_3857.js';
 import EPSG21781 from '@geoblocks/proj/src/EPSG_21781.js';
 
 if (!window.requestAnimationFrame) {
@@ -37,9 +38,9 @@ class Controller extends AbstractMobileController {
   constructor($scope, $injector) {
     super({
       autorotate: false,
-      srid: 2056,
+      srid: 3857,
       mapViewConfig: {
-        center: [2632464, 1185457],
+        center: [829170, 5933942],
         zoom: 3,
         resolutions: [250, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.25, 0.1, 0.05]
       }
@@ -56,7 +57,7 @@ class Controller extends AbstractMobileController {
     /**
      * @type {string[]}
      */
-    this.searchCoordinatesProjections = [EPSG21781, EPSG2056, 'EPSG:4326'];
+    this.searchCoordinatesProjections = [EPSG21781, EPSG2056, 'EPSG:4326', 'EPSG:3857'];
   }
 }
 

@@ -8,7 +8,7 @@ vars:
     - http://localhost
 
 
-  srid: 2056
+  srid: 3857
 
   # The application's default language. This is the language used by
   # the application if no specific language is specified in the URLs.
@@ -31,7 +31,7 @@ vars:
   interfaces_config:
     default:
       constants:
-        defaultTheme: Demo
+        defaultTheme: Default
         defaultLang: '{default_locale_name}'
         ngeoWfsPermalinkOptions:
           wfsTypes:
