@@ -2,8 +2,12 @@
 
 function restore_db(){
     docker run --name=${package_name}_db --env=POSTGRES_PASSWORD=www-data --env=POSTGRES_USER=www-data --env=POSTGRES_DB=gmf_${package_name} --env=PGPASSWORD=www-data --env=PGUSER=www-data --env=PGDATABASE=gmf_$package_name --detach --publish=65432:5432 camptocamp/postgres:10
-    # FIXME: for sure we can do something more clever
-    sleep 5
+    # simply wait for the DB to be ready
+    until docker exec ${package_name}_db psql -c "SELECT schema_name FROM information_schema.schemata;" 2> /dev/null ; do
+        echo "waiting for the DB to be up"
+        sleep 1
+    done
+    echo "importing database"
     docker exec -i ${package_name}_db pg_restore -d gmf_${package_name} < sample/sample_db.dump
 }
 
@@ -45,6 +49,8 @@ function main(){
     run
 #    create_db
     restore_db
+    docker-compose down
+    docker-compose up -d
 }
 
 package_name=${1:-"package_gmf"}
