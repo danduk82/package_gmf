@@ -7,6 +7,12 @@ allowedReferers:
   - !hostnameMatch
     host: ${VISIBLE_WEB_HOST}
   - !localMatch {}
+  - !ipMatch
+    ip: 172.17.0.1
+    mask: 255.255.0.0
+  - !ipMatch
+    ip: 0.0.0.0
+    mask: 0.0.0.0
 
 templates:
   1 A4 portrait: !template
@@ -67,6 +73,9 @@ templates:
           ##       port: ${GEOPORTAL_INTERNAL_PORT}
           - !forwardHeaders
             matchers:
+            #  - !hostnameMatch
+            #    host: ${GEOPORTAL_INTERNAL_HOST}
+            #    port: ${GEOPORTAL_INTERNAL_PORT}
               - !hostnameMatch
                 host: ${VISIBLE_WEB_HOSTNAME}
                 port: ${VISIBLE_WEB_PORT}
