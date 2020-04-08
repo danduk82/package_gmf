@@ -46,7 +46,7 @@ COPY --from=builder /tmp/config/ /tmp/config/
 RUN \
     if [ -e /tmp/config/mapserver ]; then mv /tmp/config/mapserver /etc/; fi && \
     if [ -e /tmp/config/tilegeneration ]; then mv /tmp/config/tilegeneration /etc/; fi && \
-    if [ -e /tmp/config/qgisserver ]; then mv /tmp/config/qgisserver /etc/qgisserver; fi && \
+    if [ -e /tmp/config/qgisserver ]; then mv /tmp/config/qgisserver /etc/qgisserver; chown -R www-data:www-data /etc/qgisserver; fi && \
     mkdir --parent /usr/local/tomcat/webapps/ROOT/ && \
     if [ -e /tmp/config/print ]; then mv /tmp/config/print/print-apps /usr/local/tomcat/webapps/ROOT/; fi && \
     mv /tmp/config/geoportal/package_gmf_geoportal/ /etc/geomapfish/ && \

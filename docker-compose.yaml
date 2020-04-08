@@ -24,9 +24,13 @@ services:
     volumes_from:
       - config:ro
       # Single QGIS project files
+    volumes:
+      - /home/aborghi/Documents/projects/metron/data/test_data/:/data
     environment:
-      - QGIS_PROJECT_FILE=/etc/qgisserver/project.qgz
-      - GEOMAPFISH_OGCSERVER=qgis
+      - QGIS_PROJECT_FILE=
+      - GEOMAPFISH_ACCESSCONTROL_CONFIG=/etc/qgisserver/accesscontrol_config.yaml
+      - QGIS_SERVER_LOG_LEVEL=0
+      - QGIS_DEBUG=1
 
   redis:
     extends:
