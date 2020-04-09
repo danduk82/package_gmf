@@ -25,7 +25,7 @@ services:
       - config:ro
       # Single QGIS project files
     volumes:
-      - /home/aborghi/Documents/projects/metron/data/test_data/:/data
+      - /data/project/data/:/data
     environment:
       - QGIS_PROJECT_FILE=
       - GEOMAPFISH_ACCESSCONTROL_CONFIG=/etc/qgisserver/accesscontrol_config.yaml

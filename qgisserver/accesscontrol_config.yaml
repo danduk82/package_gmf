@@ -3,17 +3,4 @@
 map_config:
   /etc/qgisserver/project.qgz:
     ogc_server: qgis
-  /data/metron/metron_db.qgz:
-    ogc_server: qgis_metron
-  /data/Potential_Innenentwicklung/BEADAT/PROJEKT/Pla_Analyse_Einwohnerdichte_A0_151216.qgz:
-    ogc_server: qgis_Pla_Analyse_Einwohnerdichte_A0_151216
-  /data/fusspot/fusspotdunkel.qgz:
-    ogc_server: qgis_test
-  /data/fusspot/fusspotdunkel_pg.qgz:
-    ogc_server: qgis_fusspotdunkel_pg
-  /data/basemap_osm/dark_basemap_CH.qgz:
-    ogc_server: qgis_osm_dark_basemap_CH
-  /data/Punktdaten_Konflikte_Infrastruktur/BEADAT/PROJEKT/pla_Erholungsinfrastruktur_Konflikte.qgz:
-    ogc_server: qgis_Punktdaten_Konflikte_Infrastruktur
-
 
