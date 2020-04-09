@@ -32,6 +32,13 @@ services:
       - QGIS_SERVER_LOG_LEVEL=0
       - QGIS_DEBUG=1
 
+  tinyows:
+    extends:
+      file: docker-compose-lib.yaml
+      service: tinyows
+    volumes_from:
+      - config:ro
+
   redis:
     extends:
       file: docker-compose-lib.yaml

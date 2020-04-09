@@ -18,17 +18,22 @@ vars:
 
   # Database information
   sqlalchemy:
-    url: postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}
+    url: postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}?sslmode={PGSSLMODE}
     pool_recycle: 30
     pool_size: 5
     max_overflow: 25
     use_batch_mode: true
   sqlalchemy_slave:
-    url: postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST_SLAVE}:{PGPORT}/{PGDATABASE}
+    url: postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST_SLAVE}:{PGPORT_SLAVE}/{PGDATABASE}?sslmode={PGSSLMODE}
     pool_recycle: 30
     pool_size: 5
     max_overflow: 25
     use_batch_mode: true
+
+  # Session backend
+  session:
+    type: 'ext:redis'
+    url: 'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
 
   # 10 days of default cache
   default_max_age: 864000
@@ -121,6 +126,15 @@ vars:
                 ITEMFONTFAMILY: DejaVu Sans
                 LAYERFONTSIZE: '10'
                 ITEMFONTSIZE: '8'
+        gmfPermalinkOptions:
+          crosshairStyle:
+          crosshairEnabledByDefault: False
+          projectionCodes:
+            - EPSG:3857
+            - EPSG:2056
+            - EPSG:21781
+          useLocalStorage: False
+          pointRecenterZoom:
       routes:
         gmfProfileJsonUrl:
           name: profile.json
@@ -169,6 +183,15 @@ vars:
                 profile: routed-hiking
         ngeoNominatimSearchDefaultParams:
           countrycodes: CH
+        gmfPermalinkOptions:
+          crosshairStyle:
+          crosshairEnabledByDefault: True
+          projectionCodes:
+            - EPSG:3857
+            - EPSG:2056
+            - EPSG:21781
+          useLocalStorage: False
+          pointRecenterZoom:
       routes:
         gmfProfileJsonUrl:
           name: profile.json
@@ -503,7 +526,7 @@ vars:
           style-src {content_security_policy_admin_style_src};
           img-src {content_security_policy_admin_img_src};
           worker-src {content_security_policy_admin_worker_src}"
-    - pattern: '^/getitfixed/.*'
+    - pattern: '^/getitfixed.*'
       headers: *c2cgeoform_headers
     - pattern: '^/static/.*'
       headers:
@@ -703,10 +726,14 @@ runtime_environment:
   - PGHOST_SLAVE
   - name: PGPORT
     default: '5432'
+  - name: PGPORT_SLAVE
+    default: '5432'
   - PGUSER
   - PGPASSWORD
   - name: PGDATABASE
     default: geomapfish
+  - name: PGSSLMODE
+    default: prefer
   - name: PGSCHEMA
     default: main
   - name: PGSCHEMA_STATIC

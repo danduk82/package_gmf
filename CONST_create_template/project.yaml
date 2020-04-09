@@ -7,6 +7,12 @@ managed_files: []
 unmanaged_files: []
 template_vars:
   package: package_gmf
-  srid: 2056
-  extent: 2489246.40,1078873.38,2837119.80,1296543.09
+  srid: 3857
+  extent: -20037508.34,-20048966.10,20037508.34,20048966.10
   authtkt_secret: noghe6xai7ieweinga8avioh3theemagei9mie3Xeuy9aiGhei9ciYeidaew0ahf
+env:
+  files:
+    - env.default
+    - env.project
+  required_args: 0
+  help: No arguments needed.

@@ -4,7 +4,7 @@ extends: CONST_vars.yaml
 
 vars:
 
-  srid: 2056
+  srid: 3857
 
   # The application's default language. This is the language used by
   # the application if no specific language is specified in the URLs.
@@ -112,7 +112,7 @@ vars:
     email_body: |
       Hello {user},
 
-      You have asked for an new password,
+      You have asked for a new password,
       the newly generated password is: {password}
 
       Sincerely yours
@@ -145,7 +145,7 @@ vars:
     #       comments: ""
     #       datasource: []
     #       map:
-    #         projection: "EPSG:2056"
+    #         projection: "EPSG:3857"
     #         dpi: 254
     #         rotation: 0
     #         center: [2600000, 1200000]
@@ -168,6 +168,8 @@ update_paths:
   - admin_interface.available_in_templates
   - api
   - authorized_referers
+  - cache.std.arguments
+  - cache.obj
   - check_collector.disabled
   - check_collector.hosts
   - checker.fulltextsearch
