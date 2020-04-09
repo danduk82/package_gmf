@@ -8,7 +8,10 @@ function restore_db(){
         sleep 1
     done
     echo "importing database"
-    docker exec -i ${package_name}_db pg_restore -d gmf_${package_name} < sample/sample_db.dump
+    myTest=$(docker exec ${package_name}_db psql -tc "SELECT count(*) from ne_10m_lakes")
+    if [[ ! ${myTest} -gt 1 ]] ; then
+      docker exec -i ${package_name}_db pg_restore -d gmf_${package_name} < sample/sample_db.dump
+    fi
     echo "migrate DB schemas"
     docker-compose exec geoportal alembic --config=alembic.ini --name=main upgrade head
     docker-compose exec geoportal alembic --config=alembic.ini --name=static upgrade head
@@ -57,6 +60,7 @@ function main(){
 }
 
 package_name=${1:-"package_gmf"}
+db_storage=${2:-"/tmp/postgres-data"}
 # if file is executed and not sourced
 if [[ "${BASH_SOURCE[0]}" = "${0}" ]] ; then
     main
