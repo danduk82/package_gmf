@@ -9,6 +9,9 @@ function restore_db(){
     done
     echo "importing database"
     docker exec -i ${package_name}_db pg_restore -d gmf_${package_name} < sample/sample_db.dump
+    echo "migrate DB schemas"
+    docker-compose exec geoportal alembic --config=alembic.ini --name=main upgrade head
+    docker-compose exec geoportal alembic --config=alembic.ini --name=static upgrade head
 }
 
 function create_db(){
