@@ -50,11 +50,49 @@ function run(){
     docker-compose up -d
 }
 
+function configure_full_text_search(){
+    echo 'Configure full text search'
+    docker exec ${package_name}_db psql -c "CREATE EXTENSION IF NOT EXISTS unaccent;"
+
+    # Configure full text search
+    docker exec ${package_name}_db psql -c "CREATE TEXT SEARCH CONFIGURATION en (COPY = english);"
+    docker exec ${package_name}_db psql -c "ALTER TEXT SEARCH CONFIGURATION en ALTER MAPPING FOR hword, hword_part, word WITH unaccent, english_stem;"
+    docker exec ${package_name}_db psql -c "CREATE TEXT SEARCH CONFIGURATION de (COPY = german);"
+    docker exec ${package_name}_db psql -c "ALTER TEXT SEARCH CONFIGURATION de ALTER MAPPING FOR hword, hword_part, word WITH unaccent, german_stem;"
+    # Set CRS for tsearch to 3857
+    docker exec ${package_name}_db psql -c "SELECT UpdateGeometrySRID('main', 'tsearch', 'the_geom', 3857);"
+}
+
+function create_tsearch_table(){
+    docker exec ${package_name}_db psql -c "
+    INSERT INTO main.tsearch (the_geom, layer_name, label, public, role_id, lang, ts)
+    SELECT
+        (ST_TRANSFORM(wkb_geometry, 3857),
+        'Country',
+        name,
+        't',
+        NULL,
+        NULL,
+        to_tsvector('en', name) || to_tsvector('de', name)
+    FROM ne_10m_admin_0_sovereignty;
+    "
+}
+
+function dump_tsearch_table(){
+    docker exec -i ${package_name}_db pg_dump -d gmf_${package_name} --table main.tsearch -F c > "sample/tsearch.dmp"
+}
+
+function restore_tsearch_table(){
+    docker exec -i ${package_name}_db pg_restore -d gmf_${package_name} --clean < "sample/tsearch.dmp"
+}
+
 # MAIN
 function main(){
     run
 #    create_db
     restore_db
+    configure_full_text_search
+    # create_tsearch_table
     docker-compose down
     docker-compose up -d
 }
