@@ -78,21 +78,16 @@ function create_tsearch_table(){
     "
 }
 
-function dump_tsearch_table(){
-    docker exec -i ${package_name}_db pg_dump -d gmf_${package_name} --table main.tsearch -F c > "sample/tsearch.dmp"
-}
-
-function restore_tsearch_table(){
-    docker exec -i ${package_name}_db pg_restore -d gmf_${package_name} --clean < "sample/tsearch.dmp"
-}
-
 # MAIN
 function main(){
     run
 #    create_db
     restore_db
     configure_full_text_search
-    # create_tsearch_table
+    tsearchTableTest=$(docker exec ${package_name}_db psql -tc "SELECT count(*) from main.tsearch")
+    if [[ ! ${myTest} -gt 1 ]] ; then
+        create_tsearch_table
+    fi
     docker-compose down
     docker-compose up -d
 }
