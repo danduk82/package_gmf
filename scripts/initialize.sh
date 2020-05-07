@@ -96,9 +96,9 @@ function main(){
     run
 #    create_db
     restore_db
-    configure_full_text_search
+    # configure_full_text_search
     tsearchTableTest=$(docker exec ${package_name}_db psql -tc "SELECT count(*) from main.tsearch")
-    if [[ ! ${myTest} -gt 1 ]] ; then
+    if [[ ! ${tsearchTableTest} -gt 1 ]] ; then
         create_tsearch_table
     fi
     docker-compose down
