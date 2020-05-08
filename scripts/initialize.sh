@@ -64,31 +64,34 @@ function configure_full_text_search(){
 }
 
 function create_tsearch_table(){
-    echo 'Create tsearch table'
-    docker exec ${package_name}_db psql -c "
-    INSERT INTO main.tsearch (the_geom, layer_name, label, public, role_id, lang, ts)
-    SELECT
-        ST_TRANSFORM(wkb_geometry, 3857),
-        'Country',
-        name,
-        't',
-        NULL,
-        NULL,
-        to_tsvector('en', name) || to_tsvector('de', name)
-    FROM ne_10m_admin_0_sovereignty;
-    "
-    docker exec ${package_name}_db psql -c "
-    INSERT INTO main.tsearch (the_geom, layer_name, label, public, role_id, lang, ts)
-    SELECT
-        ST_TRANSFORM(geom, 3857),
-        'Place',
-        name,
-        't',
-        NULL,
-        NULL,
-        to_tsvector('en', name) || to_tsvector('de', name)
-    FROM karlsruhe_place;
-    "
+    tsearchTableTest=$(docker exec ${package_name}_db psql -tc "SELECT count(*) from main.tsearch")
+    if [[ ! ${tsearchTableTest} -gt 1 ]] ; then
+        echo 'Create tsearch table'
+        docker exec ${package_name}_db psql -c "
+        INSERT INTO main.tsearch (the_geom, layer_name, label, public, role_id, lang, ts)
+        SELECT
+            ST_TRANSFORM(wkb_geometry, 3857),
+            'Country',
+            name,
+            't',
+            NULL,
+            NULL,
+            to_tsvector('en', name) || to_tsvector('de', name)
+        FROM ne_10m_admin_0_sovereignty;
+        "
+        docker exec ${package_name}_db psql -c "
+        INSERT INTO main.tsearch (the_geom, layer_name, label, public, role_id, lang, ts)
+        SELECT
+            ST_TRANSFORM(geom, 3857),
+            'Place',
+            name,
+            't',
+            NULL,
+            NULL,
+            to_tsvector('en', name) || to_tsvector('de', name)
+        FROM karlsruhe_place;
+        "
+    fi
 }
 
 # MAIN
@@ -97,10 +100,7 @@ function main(){
 #    create_db
     restore_db
     # configure_full_text_search
-    tsearchTableTest=$(docker exec ${package_name}_db psql -tc "SELECT count(*) from main.tsearch")
-    if [[ ! ${tsearchTableTest} -gt 1 ]] ; then
-        create_tsearch_table
-    fi
+    create_tsearch_table
     docker-compose down
     docker-compose up -d
 }
