@@ -79,8 +79,8 @@ vars:
   fulltextsearch:
     languages:
       fr: french
-      en: english
-      de: german
+      en: en
+      de: de
 
   # proxies:
   #   http: https://someproxy
